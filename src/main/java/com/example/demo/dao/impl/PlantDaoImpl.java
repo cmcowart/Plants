@@ -1,5 +1,6 @@
 package com.example.demo.dao.impl;
 
+import com.example.demo.constants.SqlQueries;
 import com.example.demo.dao.PlantDao;
 import com.example.demo.model.*;
 import jakarta.annotation.PostConstruct;
@@ -22,26 +23,48 @@ public class PlantDaoImpl extends JdbcDaoSupport implements PlantDao {
     }
 
     @Override
+    public int getMaxPlantId() {
+        return getJdbcTemplate().queryForObject(
+                SqlQueries.GET_MAX_PLANT_ID,
+                Integer.class);
+    }
+
+    @Override
     public List<Plant> getAllPlants() {
-        final String sql = "SELECT id, plant_type_id, plant_location_id, name FROM PLANTS";
-        return getJdbcTemplate().query(sql, (rs, rowNum) ->
+        return getJdbcTemplate().query(SqlQueries.GET_ALL_PLANTS, (rs, rowNum) ->
                 ImmutablePlant.builder()
                         .id(rs.getInt("id"))
                         .plantTypeId(rs.getInt("plant_type_id"))
                         .plantLocationId(rs.getInt("plant_location_id"))
                         .name(rs.getString("name"))
+                        .isActive(rs.getInt("is_active") == 1)
+                        .build());
+    }
+
+    public List<HydratedPlant> getCurrentPlantReport() {
+        return getJdbcTemplate().query(SqlQueries.GET_PLANT_REPORT, (rs, rowNum) ->
+                ImmutableHydratedPlant.builder()
+                        .id(rs.getInt("id"))
+                        .plantTypeId(rs.getInt("plant_type_id"))
+                        .plantLocationId(rs.getInt("plant_location_id"))
+                        .name(rs.getString("name"))
+                        .isActive(rs.getInt("is_active") == 1)
+                        .lastWateredAt(rs.getLong("watered_at"))
+                        .lastFertilizedAt(rs.getLong("fed_at"))
                         .build());
     }
 
     public int createPlant(ImmutablePlantEgg egg) {
-        final String sql = "INSERT INTO PLANTS(plant_type_id, plant_location_id, name) VALUES (?,?,?)";
-        return getJdbcTemplate().update(sql, egg.getPlantTypeId(), egg.getPlantLocationId(), egg.getName());
+        return getJdbcTemplate().update(
+                SqlQueries.CREATE_PLANT,
+                egg.getPlantTypeId(),
+                egg.getPlantLocationId(),
+                egg.getName());
     }
 
     @Override
     public List<PlantActionType> getAllPlantActionTypes() {
-        final String sql = "SELECT id, description FROM PLANT_ACTION_TYPES";
-        return getJdbcTemplate().query(sql, (rs, rowNum) ->
+        return getJdbcTemplate().query(SqlQueries.GET_PLANT_ACTION_TYPES, (rs, rowNum) ->
                 ImmutablePlantActionType.builder()
                         .id(rs.getInt("id"))
                         .name(rs.getString("description"))
@@ -50,8 +73,7 @@ public class PlantDaoImpl extends JdbcDaoSupport implements PlantDao {
 
     @Override
     public List<PlantLocation> getAllPlantLocations() {
-        final String sql = "SELECT id, description FROM PLANT_LOCATIONS";
-        return getJdbcTemplate().query(sql, (rs, rowNum) ->
+        return getJdbcTemplate().query(SqlQueries.GET_ALL_PLANT_LOCATIONS, (rs, rowNum) ->
                 ImmutablePlantLocation.builder()
                         .id(rs.getInt("id"))
                         .description(rs.getString("description"))

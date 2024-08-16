@@ -1,6 +1,7 @@
 package com.example.demo;
 
 import com.example.demo.dao.PlantActionDao;
+import com.example.demo.dao.PlantController;
 import com.example.demo.dao.PlantDao;
 import com.example.demo.dao.PlantTypeDao;
 import com.example.demo.model.*;
@@ -15,7 +16,7 @@ import java.util.List;
 
 @SpringBootApplication
 @RestController
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "http://localhost:3000/")
 public class DemoApplication {
 	Logger LOG = LoggerFactory.getLogger(DemoApplication.class);
 
@@ -26,6 +27,9 @@ public class DemoApplication {
 	@Autowired
 	PlantTypeDao plantTypeDao;
 
+	@Autowired
+	PlantController plantController;
+
 	public static void main(String[] args) {
 		SpringApplication.run(DemoApplication.class, args);
 	}
@@ -35,15 +39,15 @@ public class DemoApplication {
 		return plantDao.getAllPlants();
 	}
 
+	@GetMapping("/plant-report")
+	public List<HydratedPlant> getCurrentPlantList() {
+		return plantController.getAllActiveHydratedPlants();
+	}
+
 	//curl -X POST http://localhost:8080/plants/create  -H "Content-Type: application/json" -d '{"name":"test","plantTypeId":1,"plantLocationId":1}'
 	@PostMapping("/plants/create")
 	public int createPlant(@RequestBody ImmutablePlantEgg egg) {
-		LOG.info(
-				String.format("Creating new plant (name: %s, type: %d, location: %d)",
-						egg.getName(),
-						egg.getPlantTypeId(),
-						egg.getPlantLocationId()));
-		return plantDao.createPlant(egg);
+		return plantController.createPlant(egg);
 	}
 
 	@GetMapping("/plant-action-types")
@@ -72,6 +76,11 @@ public class DemoApplication {
 	@GetMapping("/plant-actions")
 	public List<PlantAction> getAllPlantActions() {
 		return plantActionDao.getAllPlantActions();
+	}
+
+	@GetMapping("/plant-actions/{plantId}")
+	public List<PlantAction> getActionsForPlant(@PathVariable int plantId) {
+		return plantActionDao.getActionsForPlant(plantId);
 	}
 
 	//curl -X POST http://localhost:8080/plant-actions/create  -H "Content-Type: application/json" -d '{"plantId":1,"actionTypeId":1}'
