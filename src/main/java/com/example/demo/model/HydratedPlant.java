@@ -3,10 +3,7 @@ package com.example.demo.model;
 import org.immutables.value.Value;
 
 @Value.Immutable
-public interface Plant extends PlantFields {
-    @Value
+public interface HydratedPlant extends PlantFields, PlantHydrationFields {
     int getId();
-
-    @Value
-    boolean isActive();
+    boolean getIsActive();
 }

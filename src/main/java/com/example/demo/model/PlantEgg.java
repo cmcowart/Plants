@@ -7,5 +7,5 @@ import org.immutables.value.Value;
 @Value.Immutable
 @JsonSerialize(as = ImmutablePlantEgg.class)
 @JsonDeserialize(as = ImmutablePlantEgg.class)
-public interface PlantEgg extends PlantFields {
+public interface PlantEgg extends PlantFields, PlantCreationFields {
 }
